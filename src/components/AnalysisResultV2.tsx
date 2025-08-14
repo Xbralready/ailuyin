@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -71,15 +71,6 @@ const AnalysisResultV2: React.FC = () => {
   const [copySuccess, setCopySuccess] = useState(false);
   const [scenario, setScenario] = useState<ScenarioType>('general');
 
-  useEffect(() => {
-    if (!state?.transcript) {
-      navigate('/');
-      return;
-    }
-    loadModels();
-    performAnalysis();
-  }, []);
-
   const loadModels = async () => {
     try {
       const data = await getModels();
@@ -90,7 +81,7 @@ const AnalysisResultV2: React.FC = () => {
     }
   };
 
-  const performAnalysis = async () => {
+  const performAnalysis = useCallback(async () => {
     setIsAnalyzing(true);
     try {
       const result = await analyzeTranscript(state.transcript, scenario, selectedModel);
@@ -125,7 +116,16 @@ const AnalysisResultV2: React.FC = () => {
     } finally {
       setIsAnalyzing(false);
     }
-  };
+  }, [state.transcript, scenario, selectedModel]);
+
+  useEffect(() => {
+    if (!state?.transcript) {
+      navigate('/');
+      return;
+    }
+    loadModels();
+    performAnalysis();
+  }, [navigate, performAnalysis, state?.transcript]);
 
   const getScenarioName = (scenario: ScenarioType) => {
     switch (scenario) {

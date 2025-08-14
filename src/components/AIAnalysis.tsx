@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   ChevronLeft,
@@ -11,6 +11,7 @@ import {
   Settings
 } from 'lucide-react';
 import { analyzeTranscriptLegacy, getModels } from '../services/api';
+import type { ModelInfo } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import './AIAnalysis.css';
 
@@ -86,11 +87,28 @@ const AIAnalysis: React.FC = () => {
   const [customPrompt, setCustomPrompt] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState('');
-  const [models, setModels] = useState<any[]>([]);
+  const [models, setModels] = useState<ModelInfo[]>([]);
   const [selectedModel, setSelectedModel] = useState('gpt-4o-mini');
   const [showSettings, setShowSettings] = useState(false);
   const [history, setHistory] = useState<AnalysisHistory[]>([]);
   const [showHistory, setShowHistory] = useState(false);
+
+  const loadModels = async () => {
+    try {
+      const data = await getModels();
+      setModels(data.models);
+      setSelectedModel(data.currentModel);
+    } catch (error) {
+      console.error('加载模型失败:', error);
+    }
+  };
+
+  const loadHistory = useCallback(() => {
+    const saved = localStorage.getItem(`analysis_history_${user?._id}`);
+    if (saved) {
+      setHistory(JSON.parse(saved));
+    }
+  }, [user?._id]);
 
   // 从录音页面传递过来的文本
   useEffect(() => {
@@ -103,24 +121,7 @@ const AIAnalysis: React.FC = () => {
   useEffect(() => {
     loadModels();
     loadHistory();
-  }, []);
-
-  const loadModels = async () => {
-    try {
-      const data = await getModels();
-      setModels(data.models);
-      setSelectedModel(data.currentModel);
-    } catch (error) {
-      console.error('加载模型失败:', error);
-    }
-  };
-
-  const loadHistory = () => {
-    const saved = localStorage.getItem(`analysis_history_${user?._id}`);
-    if (saved) {
-      setHistory(JSON.parse(saved));
-    }
-  };
+  }, [loadHistory]);
 
   const saveToHistory = (analysis: AnalysisHistory) => {
     const newHistory = [analysis, ...history].slice(0, 50); // 最多保存50条

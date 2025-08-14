@@ -23,6 +23,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -82,9 +83,13 @@ const setupAxiosInterceptors = (refreshToken: () => Promise<string>) => {
 
   // 响应拦截器
   let isRefreshing = false;
-  let failedQueue: any[] = [];
+  interface QueueItem {
+    resolve: (token: string | null) => void;
+    reject: (error: unknown) => void;
+  }
+  let failedQueue: QueueItem[] = [];
 
-  const processQueue = (error: any, token: string | null = null) => {
+  const processQueue = (error: unknown, token: string | null = null) => {
     failedQueue.forEach((prom) => {
       if (error) {
         prom.reject(error);
@@ -160,14 +165,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   const refreshToken = useCallback(async () => {
-    try {
-      const response = await api.post('/auth/refresh');
-      const { accessToken } = response.data;
-      localStorage.setItem('accessToken', accessToken);
-      return accessToken;
-    } catch (error) {
-      throw error;
-    }
+    const response = await api.post('/auth/refresh');
+    const { accessToken } = response.data;
+    localStorage.setItem('accessToken', accessToken);
+    return accessToken;
   }, []);
 
   // 获取当前用户信息

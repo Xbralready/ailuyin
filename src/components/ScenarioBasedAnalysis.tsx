@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -64,15 +64,6 @@ const ScenarioBasedAnalysis: React.FC = () => {
   const [models, setModels] = useState<ModelInfo[]>([]);
   const [scenario, setScenario] = useState<ScenarioType>('customer_meeting');
 
-  useEffect(() => {
-    if (!state?.transcript) {
-      navigate('/');
-      return;
-    }
-    loadModels();
-    performAnalysis();
-  }, []);
-
   const loadModels = async () => {
     try {
       const data = await getModels();
@@ -83,7 +74,7 @@ const ScenarioBasedAnalysis: React.FC = () => {
     }
   };
 
-  const performAnalysis = async () => {
+  const performAnalysis = useCallback(async () => {
     setIsAnalyzing(true);
     try {
       const result = await analyzeTranscript(state.transcript, scenario, selectedModel);
@@ -116,7 +107,16 @@ const ScenarioBasedAnalysis: React.FC = () => {
     } finally {
       setIsAnalyzing(false);
     }
-  };
+  }, [state.transcript, scenario, selectedModel]);
+
+  useEffect(() => {
+    if (!state?.transcript) {
+      navigate('/');
+      return;
+    }
+    loadModels();
+    performAnalysis();
+  }, [navigate, performAnalysis, state?.transcript]);
 
   const formatDuration = (seconds: number) => {
     const mins = Math.floor(seconds / 60);

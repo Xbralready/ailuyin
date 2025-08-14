@@ -1,4 +1,5 @@
 // API配置管理 - 自动处理后端地址切换和故障转移
+import { AxiosError } from 'axios';
 
 interface ApiEndpoint {
   url: string;
@@ -117,7 +118,7 @@ class ApiConfigManager {
   }
 
   // 处理请求失败，尝试故障转移
-  public async handleRequestFailure(error: any): Promise<boolean> {
+  public async handleRequestFailure(error: AxiosError | Error): Promise<boolean> {
     // 避免重复触发故障转移
     if (this.failoverInProgress) {
       return false;
@@ -159,14 +160,14 @@ class ApiConfigManager {
   }
 
   // 判断是否应该触发故障转移
-  private shouldTriggerFailover(error: any): boolean {
-    // 网络错误
-    if (!error.response) {
-      return true;
+  private shouldTriggerFailover(error: AxiosError | Error): boolean {
+    // 类型守卫：检查是否为AxiosError
+    if (!('response' in error)) {
+      return true; // 网络错误
     }
 
     // 服务器错误 (5xx)
-    if (error.response?.status >= 500) {
+    if (error.response?.status && error.response.status >= 500) {
       return true;
     }
 
@@ -191,7 +192,9 @@ class ApiConfigManager {
       const isHealthy = await this.checkEndpointHealth(this.currentEndpoint);
       if (!isHealthy) {
         console.warn('当前端点不健康，尝试切换...');
-        await this.handleRequestFailure({ response: { status: 503 } });
+        const mockError = new Error('Health check failed') as AxiosError;
+        mockError.response = { status: 503 } as AxiosError['response'];
+        await this.handleRequestFailure(mockError);
       }
     }
   }
@@ -229,4 +232,4 @@ export const apiConfig = new ApiConfigManager();
 
 // 导出便捷方法
 export const getApiUrl = () => apiConfig.getCurrentApiUrl();
-export const handleApiFailure = (error: any) => apiConfig.handleRequestFailure(error);
+export const handleApiFailure = (error: AxiosError | Error) => apiConfig.handleRequestFailure(error);

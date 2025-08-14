@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRecorder } from '../hooks/useRecorder';
 import { transcribeAudio, analyzeTranscriptLegacy, checkHealth } from '../services/api';
 import './Recorder.css';
@@ -55,14 +55,7 @@ export const Recorder: React.FC = () => {
     stopRecording();
   };
 
-  // 当录音完成并有音频数据时，自动进行转录
-  useEffect(() => {
-    if (audioBlob && !isRecording) {
-      handleTranscribe();
-    }
-  }, [audioBlob, isRecording]);
-
-  const handleTranscribe = async () => {
+  const handleTranscribe = useCallback(async () => {
     if (!audioBlob) return;
 
     setIsProcessing(true);
@@ -81,7 +74,14 @@ export const Recorder: React.FC = () => {
     } finally {
       setIsProcessing(false);
     }
-  };
+  }, [audioBlob]);
+
+  // 当录音完成并有音频数据时，自动进行转录
+  useEffect(() => {
+    if (audioBlob && !isRecording) {
+      handleTranscribe();
+    }
+  }, [audioBlob, isRecording, handleTranscribe]);
 
   return (
     <div className="recorder-container">

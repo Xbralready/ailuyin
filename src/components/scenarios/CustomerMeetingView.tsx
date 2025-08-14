@@ -47,8 +47,8 @@ interface CustomerMeetingViewProps {
 const CustomerMeetingView: React.FC<CustomerMeetingViewProps> = ({
   analysisData,
   onRiskToggle,
-  onTodoToggle,
-  recordingInfo: _recordingInfo
+  onTodoToggle
+  // recordingInfo is not used in this view
 }) => {
   const [expandedRisks, setExpandedRisks] = useState<Set<string>>(new Set());
   const [activeTab, setActiveTab] = useState<'summary' | 'risks' | 'followup'>('summary');

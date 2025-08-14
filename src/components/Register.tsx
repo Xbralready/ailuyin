@@ -53,8 +53,8 @@ const Register: React.FC = () => {
     try {
       await register(email, password, nickname);
       navigate('/');
-    } catch (err: any) {
-      setError(err.message || '注册失败，请稍后重试');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : '注册失败，请稍后重试');
     } finally {
       setLoading(false);
     }

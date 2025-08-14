@@ -48,8 +48,8 @@ interface PhoneSalesViewProps {
 const PhoneSalesView: React.FC<PhoneSalesViewProps> = ({
   analysisData,
   onRiskToggle,
-  onTodoToggle,
-  recordingInfo: _recordingInfo
+  onTodoToggle
+  // recordingInfo is not used in this view
 }) => {
   const [activeSection, setActiveSection] = useState<'overview' | 'compliance' | 'actions'>('overview');
 

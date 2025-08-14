@@ -23,8 +23,8 @@ const Login: React.FC = () => {
     try {
       await login(email, password);
       navigate('/');
-    } catch (err: any) {
-      setError(err.message || '登录失败，请检查邮箱和密码');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : '登录失败，请检查邮箱和密码');
     } finally {
       setLoading(false);
     }

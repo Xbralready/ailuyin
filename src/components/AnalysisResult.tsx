@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   ChevronLeft,
@@ -36,15 +36,6 @@ const AnalysisResult: React.FC = () => {
   const [showSettings, setShowSettings] = useState(false);
   const [analysisType, setAnalysisType] = useState<'summary' | 'detailed' | 'action'>('summary');
 
-  useEffect(() => {
-    if (!state?.transcript) {
-      navigate('/');
-      return;
-    }
-    loadModels();
-    performAnalysis();
-  }, []);
-
   const loadModels = async () => {
     try {
       const data = await getModels();
@@ -55,7 +46,7 @@ const AnalysisResult: React.FC = () => {
     }
   };
 
-  const getAnalysisPrompt = () => {
+  const getAnalysisPrompt = useCallback(() => {
     switch (analysisType) {
       case 'detailed':
         return '请对以下内容进行详细分析，包括：\n1. 主题和核心观点\n2. 关键信息提取\n3. 逻辑结构分析\n4. 重要细节\n5. 总结和建议\n\n内容：';
@@ -64,9 +55,9 @@ const AnalysisResult: React.FC = () => {
       default:
         return '请对以下内容进行智能分析和总结：';
     }
-  };
+  }, [analysisType]);
 
-  const performAnalysis = async () => {
+  const performAnalysis = useCallback(async () => {
     setIsAnalyzing(true);
     try {
       const prompt = getAnalysisPrompt();
@@ -78,7 +69,17 @@ const AnalysisResult: React.FC = () => {
     } finally {
       setIsAnalyzing(false);
     }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.transcript, selectedModel, analysisType]);
+
+  useEffect(() => {
+    if (!state?.transcript) {
+      navigate('/');
+      return;
+    }
+    loadModels();
+    performAnalysis();
+  }, [navigate, performAnalysis, state?.transcript]);
 
   const handleReanalyze = () => {
     setAnalysis('');
