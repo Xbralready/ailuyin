@@ -1,69 +1,43 @@
-# React + TypeScript + Vite
+# AI录音系统 - 后端服务
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+这是 AI录音系统的后端服务，提供音频转录和AI分析功能。
 
-Currently, two official plugins are available:
+## 功能
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- 音频文件转录（使用 OpenAI Whisper API）
+- AI 对话分析（使用 ChatGPT API）
+- 支持多种音频格式（MP3, WAV, M4A, WebM, OGG）
 
-## Expanding the ESLint configuration
+## 部署到 Render
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+1. Fork 或 Clone 此仓库到您的 GitHub
+2. 在 [Render](https://render.com) 创建新的 Web Service
+3. 连接您的 GitHub 仓库
+4. 设置环境变量：
+   - `OPENAI_API_KEY`: 您的 OpenAI API 密钥
+   - `PORT`: 3001
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## 本地开发
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
+1. 安装依赖：
+   ```bash
+   npm install
+   ```
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+2. 创建 `.env` 文件：
+   ```bash
+   cp .env.example .env
+   ```
+   然后编辑 `.env` 文件，填入您的 OpenAI API 密钥
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+3. 启动服务：
+   ```bash
+   npm start
+   ```
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## API 端点
 
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+- `GET /api/health` - 健康检查
+- `POST /api/transcribe` - 音频转文字
+- `POST /api/analyze` - AI 分析
+- `GET /api/models` - 获取可用模型列表
